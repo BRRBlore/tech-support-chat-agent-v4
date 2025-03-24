@@ -8,6 +8,21 @@ import os
 
 # --- PAGE SETUP ---
 st.set_page_config(page_title="Tech Support Chat Agent BR v4.0", page_icon="🤖")
+st.markdown("""
+    <style>
+    .send-button > button {
+        background-color: #2E8B57 !important;
+        color: white !important;
+        font-weight: bold;
+        border-radius: 5px;
+    }
+    .stTextInput>div>div>input {
+        font-size: 16px;
+        padding: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("🤖 Tech Support Chat Agent BR v4.0")
 st.markdown("Ask your computer, server, or hardware questions below.")
 
@@ -24,8 +39,8 @@ llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 # --- SESSION STATE ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "send_flag" not in st.session_state:
-    st.session_state.send_flag = False
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -46,26 +61,27 @@ def get_bot_response(user_input):
     st.session_state.chat_history.append((user_input, response))
     return response
 
-# --- SEND HANDLER ---
-def handle_send():
-    st.session_state.send_flag = True
-
 # --- CHAT UI ---
 for q, a in st.session_state.chat_history:
-    st.markdown(f"**You:** {q}")
-    st.markdown(f"**AI:** {a}")
+    st.markdown(f"**🧑 You:** {q}")
+    st.markdown(f"**🤖 AI:** {a}")
 
-user_input = st.text_input("Ask a question:", key="input", on_change=handle_send)
+st.session_state.user_input = st.text_input("Ask a question:", value=st.session_state.user_input, key="text_input")
 
-if st.session_state.send_flag:
-    question = st.session_state.input.strip()
-    if question:
+col1, col2 = st.columns([1, 8])
+with col1:
+    send_clicked = st.button("Send", key="send_button", use_container_width=True)
+
+if send_clicked or st.session_state.user_input.strip():
+    user_input = st.session_state.user_input.strip()
+    if user_input:
         with st.spinner("Thinking..."):
-            get_bot_response(question)
-    st.session_state.send_flag = False
-    st.query_params.update(refresh="true")
+            get_bot_response(user_input)
+        st.session_state.user_input = ""
+        st.experimental_rerun()
 
 # --- RESET OPTION ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.query_params.update(reset="true")
+    st.session_state.user_input = ""
+    st.experimental_rerun()
