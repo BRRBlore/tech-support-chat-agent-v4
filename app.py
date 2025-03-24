@@ -39,10 +39,10 @@ llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 # --- SESSION STATE ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "input_buffer" not in st.session_state:
-    st.session_state.input_buffer = ""
 if "send_flag" not in st.session_state:
     st.session_state.send_flag = False
+if "pending_input" not in st.session_state:
+    st.session_state.pending_input = ""
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -62,37 +62,37 @@ def get_bot_response(user_input):
     response = llm.predict(prompt)
     st.session_state.chat_history.append((user_input, response))
 
-# --- Handle Send (Enter or button) ---
+# --- SEND HANDLER ---
 def handle_send():
+    st.session_state.pending_input = st.session_state.input_buffer
     st.session_state.send_flag = True
 
-# --- Display Chat History ---
+# --- Chat UI ---
 for q, a in st.session_state.chat_history:
     st.markdown(f"**🧑 You:** {q}")
     st.markdown(f"**🤖 AI:** {a}")
 
-# --- Input Field (separate key) ---
+# --- Text Input (DO NOT modify this directly)
 st.text_input("Ask a question:", key="input_buffer", on_change=handle_send)
 
-# --- Send Button ---
+# --- Send Button
 col1, col2 = st.columns([1, 8])
 with col1:
     if st.button("Send", use_container_width=True):
         handle_send()
 
-# --- Process message once ---
-if st.session_state.send_flag:
-    user_input = st.session_state.input_buffer.strip()
-    if user_input:
-        with st.spinner("Thinking..."):
-            get_bot_response(user_input)
-    st.session_state.input_buffer = ""
+# --- Process Once
+if st.session_state.send_flag and st.session_state.pending_input:
+    with st.spinner("Thinking..."):
+        get_bot_response(st.session_state.pending_input.strip())
     st.session_state.send_flag = False
+    st.session_state.pending_input = ""
     st.rerun()
 
-# --- Reset Chat ---
+# --- Reset Option ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
     st.session_state.input_buffer = ""
+    st.session_state.pending_input = ""
     st.session_state.send_flag = False
     st.rerun()
