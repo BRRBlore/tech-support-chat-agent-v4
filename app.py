@@ -11,24 +11,12 @@ st.set_page_config(page_title="Tech Support Chat Agent BR v4.0", page_icon="🤖
 st.title("🤖 Tech Support Chat Agent BR v4.0")
 st.markdown("Ask your computer, server, or hardware questions below.")
 
-# --- SIDEBAR ---
-st.sidebar.header("Configuration")
-api_key = st.sidebar.text_input("Enter your OpenAI API Key", type="password")
+# --- LOAD DATA & SETUP ---
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]  # Load key securely from Streamlit secrets
 
-uploaded_file = st.sidebar.file_uploader("Upload Tech Support CSV", type=["csv"])
-
-if not uploaded_file:
-    st.info("Please upload a CSV file to get started.")
-    st.stop()
-
-if not api_key:
-    st.warning("Please enter your OpenAI API key.")
-    st.stop()
-
-os.environ["OPENAI_API_KEY"] = api_key
-
-# --- LOAD AND EMBED DATA ---
-df = pd.read_csv(uploaded_file)
+# Load default CSV from repo
+DEFAULT_CSV_PATH = "tech_support_sample_QA.csv"
+df = pd.read_csv(DEFAULT_CSV_PATH)
 docs = [
     Document(page_content=f"Q: {row['question']}\nA: {row['answer']}")
     for _, row in df.iterrows()
@@ -36,14 +24,11 @@ docs = [
 
 embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vectorstore = FAISS.from_documents(docs, embedding_model)
-
-# --- GPT SETUP ---
 llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 
-# --- SESSION STATE FOR MEMORY & USER INPUT ---
+# --- SESSION STATE FOR MEMORY & INPUT ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
 
@@ -77,14 +62,13 @@ for i, (q, a) in enumerate(st.session_state.chat_history):
     st.markdown(f"**AI:** {a}")
 
 user_input = st.text_input("Ask a question:", key="input")
-
 if st.button("Send") and user_input:
     with st.spinner("Thinking..."):
         response = get_bot_response(user_input)
         st.session_state.user_input = ""
-        st.query_params.update(dummy=str(response))  # trigger rerun safely
+        st.query_params.update(dummy=str(response))
 
 # --- RESET OPTION ---
-if st.sidebar.button("🔁 Reset Chat"):
+if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.query_params.update(reset="true")  # safe rerun trigger
+    st.query_params.update(reset="true")
