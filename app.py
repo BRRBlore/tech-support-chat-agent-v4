@@ -26,7 +26,7 @@ st.markdown("""
 st.title("🤖 Tech Support Chat Agent BR v4.0")
 st.markdown("Ask your computer, server, or hardware questions below.")
 
-# --- LOAD DATA & SETUP ---
+# --- LOAD DATA ---
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 DEFAULT_CSV_PATH = "tech_support_sample_QA.csv"
 df = pd.read_csv(DEFAULT_CSV_PATH)
@@ -39,8 +39,8 @@ llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 # --- SESSION STATE ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
+if "input_buffer" not in st.session_state:
+    st.session_state.input_buffer = ""
 if "send_flag" not in st.session_state:
     st.session_state.send_flag = False
 
@@ -62,36 +62,37 @@ def get_bot_response(user_input):
     response = llm.predict(prompt)
     st.session_state.chat_history.append((user_input, response))
 
-# --- HANDLE SEND (sets flag when Enter or Send is clicked) ---
+# --- Handle Send (Enter or button) ---
 def handle_send():
     st.session_state.send_flag = True
 
-# --- CHAT UI ---
+# --- Display Chat History ---
 for q, a in st.session_state.chat_history:
     st.markdown(f"**🧑 You:** {q}")
     st.markdown(f"**🤖 AI:** {a}")
 
-# --- Text Input ---
-st.text_input("Ask a question:", key="user_input", on_change=handle_send)
+# --- Input Field (separate key) ---
+st.text_input("Ask a question:", key="input_buffer", on_change=handle_send)
 
 # --- Send Button ---
 col1, col2 = st.columns([1, 8])
 with col1:
-    send_clicked = st.button("Send", use_container_width=True, on_click=handle_send)
+    if st.button("Send", use_container_width=True):
+        handle_send()
 
-# --- Process Message Once ---
+# --- Process message once ---
 if st.session_state.send_flag:
-    user_input = st.session_state.user_input.strip()
+    user_input = st.session_state.input_buffer.strip()
     if user_input:
         with st.spinner("Thinking..."):
             get_bot_response(user_input)
-    st.session_state.user_input = ""
+    st.session_state.input_buffer = ""
     st.session_state.send_flag = False
     st.rerun()
 
 # --- Reset Chat ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.session_state.user_input = ""
+    st.session_state.input_buffer = ""
     st.session_state.send_flag = False
     st.rerun()
