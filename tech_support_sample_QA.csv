@@ -1,0 +1,21 @@
+question,answer
+My laptop won't turn on.,"Try holding the power button for 10 seconds. If it still doesn't start, check the battery and charger."
+How do I update BIOS on a Dell server?,Download the latest BIOS from Dell’s support site. Use the iDRAC or bootable USB method to apply the update.
+Laptop is overheating frequently.,"Check for dust in air vents, update BIOS, and reduce background processes."
+What to do when getting blue screen error?,"Check recent hardware/software changes, update drivers, and run memory diagnostics."
+How can I reinstall Windows on my PC?,Use the Windows Media Creation Tool to create a bootable USB and follow the installation instructions.
+Laptop battery drains too fast.,"Lower screen brightness, disable background apps, and replace old batteries."
+How to install drivers on a new PC?,Go to the manufacturer’s support site and download drivers based on your device model.
+My server is beeping 3 times at boot.,Three beeps usually indicate memory error. Reseat or replace RAM modules.
+Keyboard is not working on laptop.,"Try external keyboard, update keyboard drivers, or check for physical damage."
+How to reset BIOS settings?,Enter BIOS setup during boot and select 'Load Setup Defaults' or remove CMOS battery temporarily.
+PC takes too long to boot.,"Disable startup programs, upgrade to SSD, and scan for malware."
+How to check system temperature?,Use BIOS hardware monitor or tools like HWMonitor or CoreTemp.
+Can’t connect to Wi-Fi on laptop.,"Restart router, check drivers, and reset network settings."
+Display is flickering.,"Check refresh rate settings, update graphics drivers, and test external monitor."
+Hard disk not detected.,"Check SATA cable connection, test in BIOS, and try another system."
+My screen is completely black but fan is running.,"Try external monitor, reset RAM and CMOS, or check for GPU issues."
+Laptop freezes randomly.,"Update drivers, scan for malware, and check system logs for errors."
+USB ports are not working.,"Update chipset drivers, check power management settings, or test in BIOS."
+How to update firmware?,Download latest firmware from vendor site and follow update instructions carefully.
+No audio from speakers.,"Check volume, update audio drivers, and test with external speakers or headphones."
