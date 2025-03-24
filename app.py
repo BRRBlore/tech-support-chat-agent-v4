@@ -82,9 +82,9 @@ if st.button("Send") and user_input:
     with st.spinner("Thinking..."):
         response = get_bot_response(user_input)
         st.session_state.user_input = ""
-        st.experimental_set_query_params(dummy=str(response))  # trigger rerun safely
+        st.query_params.update(dummy=str(response))  # trigger rerun safely
 
 # --- RESET OPTION ---
 if st.sidebar.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.experimental_set_query_params(reset="true")  # safe rerun trigger
+    st.query_params.update(reset="true")  # safe rerun trigger
