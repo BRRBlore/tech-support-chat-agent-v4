@@ -39,8 +39,8 @@ llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 # --- SESSION STATE ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
+if "input_buffer" not in st.session_state:
+    st.session_state.input_buffer = ""
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -66,23 +66,24 @@ for q, a in st.session_state.chat_history:
     st.markdown(f"**🧑 You:** {q}")
     st.markdown(f"**🤖 AI:** {a}")
 
-# --- Input and Send Button ---
-user_input = st.text_input("Ask a question:", value=st.session_state.user_input, key="text_input")
+# --- Input + Send ---
+st.session_state.input_buffer = st.text_input("Ask a question:", value=st.session_state.input_buffer, key="text_input")
 
 col1, col2 = st.columns([1, 8])
 with col1:
     send_clicked = st.button("Send", key="send_button", use_container_width=True)
 
-if send_clicked or (user_input and user_input != st.session_state.user_input):
-    st.session_state.user_input = user_input.strip()
-    if st.session_state.user_input:
+# --- Handle Send ---
+if send_clicked or st.session_state.input_buffer:
+    user_input = st.session_state.input_buffer.strip()
+    if user_input:
         with st.spinner("Thinking..."):
-            get_bot_response(st.session_state.user_input)
-        st.session_state.user_input = ""
+            get_bot_response(user_input)
+        st.session_state.input_buffer = ""
         st.rerun()
 
 # --- RESET OPTION ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.session_state.user_input = ""
+    st.session_state.input_buffer = ""
     st.rerun()
