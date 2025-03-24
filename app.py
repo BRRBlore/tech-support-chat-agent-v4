@@ -40,9 +40,12 @@ vectorstore = FAISS.from_documents(docs, embedding_model)
 # --- GPT SETUP ---
 llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 
-# --- SESSION STATE FOR MEMORY ---
+# --- SESSION STATE FOR MEMORY & USER INPUT ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+
+if "user_input" not in st.session_state:
+    st.session_state.user_input = ""
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -78,9 +81,10 @@ user_input = st.text_input("Ask a question:", key="input")
 if st.button("Send") and user_input:
     with st.spinner("Thinking..."):
         response = get_bot_response(user_input)
-        st.experimental_rerun()
+        st.session_state.user_input = ""
+        st.experimental_set_query_params(dummy=str(response))  # trigger rerun safely
 
 # --- RESET OPTION ---
 if st.sidebar.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
-    st.experimental_rerun()
+    st.experimental_set_query_params(reset="true")  # safe rerun trigger
