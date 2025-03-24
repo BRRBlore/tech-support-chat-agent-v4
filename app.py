@@ -74,9 +74,9 @@ if st.session_state.send_flag:
     if user_input:
         with st.spinner("Thinking..."):
             response = get_bot_response(user_input)
-            st.session_state.user_input = ""
+    st.session_state.user_input = ""
     st.session_state.send_flag = False
-    st.rerun()
+    st.experimental_rerun()
 
 # --- RESET OPTION ---
 if st.button("🔁 Reset Chat"):
