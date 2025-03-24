@@ -66,22 +66,23 @@ for q, a in st.session_state.chat_history:
     st.markdown(f"**🧑 You:** {q}")
     st.markdown(f"**🤖 AI:** {a}")
 
-st.session_state.user_input = st.text_input("Ask a question:", value=st.session_state.user_input, key="text_input")
+# --- Input and Send Button ---
+user_input = st.text_input("Ask a question:", value=st.session_state.user_input, key="text_input")
 
 col1, col2 = st.columns([1, 8])
 with col1:
     send_clicked = st.button("Send", key="send_button", use_container_width=True)
 
-if send_clicked or st.session_state.user_input.strip():
-    user_input = st.session_state.user_input.strip()
-    if user_input:
+if send_clicked or (user_input and user_input != st.session_state.user_input):
+    st.session_state.user_input = user_input.strip()
+    if st.session_state.user_input:
         with st.spinner("Thinking..."):
-            get_bot_response(user_input)
+            get_bot_response(st.session_state.user_input)
         st.session_state.user_input = ""
-        st.experimental_rerun()
+        st.rerun()
 
 # --- RESET OPTION ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
     st.session_state.user_input = ""
-    st.experimental_rerun()
+    st.rerun()
