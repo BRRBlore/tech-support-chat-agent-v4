@@ -43,6 +43,8 @@ if "send_flag" not in st.session_state:
     st.session_state.send_flag = False
 if "pending_input" not in st.session_state:
     st.session_state.pending_input = ""
+if "input_buffer" not in st.session_state:
+    st.session_state.input_buffer = ""
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -67,29 +69,31 @@ def handle_send():
     st.session_state.pending_input = st.session_state.input_buffer
     st.session_state.send_flag = True
 
-# --- Chat UI ---
+# --- CHAT HISTORY ---
 for q, a in st.session_state.chat_history:
     st.markdown(f"**🧑 You:** {q}")
     st.markdown(f"**🤖 AI:** {a}")
 
-# --- Text Input (DO NOT modify this directly)
+# --- PROCESS MESSAGE ONCE ---
+if st.session_state.send_flag and st.session_state.pending_input:
+    with st.spinner("Thinking..."):
+        get_bot_response(st.session_state.pending_input.strip())
+
+    st.session_state.send_flag = False
+    st.session_state.pending_input = ""
+    st.session_state.input_buffer = ""  # Clear after processed
+    st.rerun()
+
+# --- INPUT FIELD (shown after rerun)
 st.text_input("Ask a question:", key="input_buffer", on_change=handle_send)
 
-# --- Send Button
+# --- SEND BUTTON
 col1, col2 = st.columns([1, 8])
 with col1:
     if st.button("Send", use_container_width=True):
         handle_send()
 
-# --- Process Once
-if st.session_state.send_flag and st.session_state.pending_input:
-    with st.spinner("Thinking..."):
-        get_bot_response(st.session_state.pending_input.strip())
-    st.session_state.send_flag = False
-    st.session_state.pending_input = ""
-    st.rerun()
-
-# --- Reset Option ---
+# --- RESET CHAT ---
 if st.button("🔁 Reset Chat"):
     st.session_state.chat_history = []
     st.session_state.input_buffer = ""
