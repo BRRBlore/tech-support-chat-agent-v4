@@ -12,25 +12,18 @@ st.title("🤖 Tech Support Chat Agent BR v4.0")
 st.markdown("Ask your computer, server, or hardware questions below.")
 
 # --- LOAD DATA & SETUP ---
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]  # Load key securely from Streamlit secrets
-
-# Load default CSV from repo
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 DEFAULT_CSV_PATH = "tech_support_sample_QA.csv"
 df = pd.read_csv(DEFAULT_CSV_PATH)
-docs = [
-    Document(page_content=f"Q: {row['question']}\nA: {row['answer']}")
-    for _, row in df.iterrows()
-]
+docs = [Document(page_content=f"Q: {row['question']}\nA: {row['answer']}") for _, row in df.iterrows()]
 
 embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vectorstore = FAISS.from_documents(docs, embedding_model)
 llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0.2)
 
-# --- SESSION STATE FOR MEMORY & INPUT ---
+# --- SESSION STATE ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
 if "send_flag" not in st.session_state:
     st.session_state.send_flag = False
 
@@ -40,12 +33,8 @@ def get_bot_response(user_input):
     memory_limit = 3
     retrieved_docs = vectorstore.similarity_search(user_input, k=k)
     context = "\n".join([doc.page_content for doc in retrieved_docs])
-
     recent_history = st.session_state.chat_history[-memory_limit:]
-    formatted_history = ""
-    for q, a in recent_history:
-        formatted_history += f"User: {q}\nAI: {a}\n"
-
+    formatted_history = "".join([f"User: {q}\nAI: {a}\n" for q, a in recent_history])
     prompt = (
         f"You are a smart, helpful tech support assistant.\n"
         f"Use only the provided context and past conversation to answer.\n\n"
@@ -53,7 +42,6 @@ def get_bot_response(user_input):
         f"Context:\n{context}\n"
         f"User: {user_input}\nAI:"
     )
-
     response = llm.predict(prompt)
     st.session_state.chat_history.append((user_input, response))
     return response
@@ -63,20 +51,19 @@ def handle_send():
     st.session_state.send_flag = True
 
 # --- CHAT UI ---
-for i, (q, a) in enumerate(st.session_state.chat_history):
+for q, a in st.session_state.chat_history:
     st.markdown(f"**You:** {q}")
     st.markdown(f"**AI:** {a}")
 
-st.text_input("Ask a question:", key="user_input", on_change=handle_send)
+user_input = st.text_input("Ask a question:", key="input", on_change=handle_send)
 
 if st.session_state.send_flag:
-    user_input = st.session_state.user_input.strip()
-    if user_input:
+    question = st.session_state.input.strip()
+    if question:
         with st.spinner("Thinking..."):
-            response = get_bot_response(user_input)
-    st.session_state.user_input = ""
+            get_bot_response(question)
     st.session_state.send_flag = False
-    st.experimental_rerun()
+    st.query_params.update(refresh="true")
 
 # --- RESET OPTION ---
 if st.button("🔁 Reset Chat"):
