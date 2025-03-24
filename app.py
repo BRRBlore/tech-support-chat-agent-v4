@@ -31,6 +31,8 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "user_input" not in st.session_state:
     st.session_state.user_input = ""
+if "send_flag" not in st.session_state:
+    st.session_state.send_flag = False
 
 # --- CHAT FUNCTION ---
 def get_bot_response(user_input):
@@ -56,14 +58,18 @@ def get_bot_response(user_input):
     st.session_state.chat_history.append((user_input, response))
     return response
 
+# --- SEND HANDLER ---
+def handle_send():
+    st.session_state.send_flag = True
+
 # --- CHAT UI ---
 for i, (q, a) in enumerate(st.session_state.chat_history):
     st.markdown(f"**You:** {q}")
     st.markdown(f"**AI:** {a}")
 
-st.text_input("Ask a question:", key="user_input", on_change=lambda: st.session_state.send_flag := True)
+st.text_input("Ask a question:", key="user_input", on_change=handle_send)
 
-if st.session_state.get("send_flag"):
+if st.session_state.send_flag:
     user_input = st.session_state.user_input.strip()
     if user_input:
         with st.spinner("Thinking..."):
